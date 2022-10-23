@@ -1,4 +1,10 @@
-const Post = () => {
+import { FC } from "react";
+
+interface IPostProps {
+  isEditable?: boolean;
+}
+
+const Post: FC<IPostProps> = ({ isEditable = false }) => {
   return (
     <div className="w-full rounded-sm p-4 shadow-md">
       {/* account and time container */}
@@ -22,6 +28,11 @@ const Post = () => {
           <button className="rounded-md bg-pink-700 p-2 text-white">
             share
           </button>
+          {isEditable ? (
+            <button className="rounded-md bg-pink-700 p-2 text-white">
+              delete
+            </button>
+          ) : null}
         </div>
       </div>
     </div>
