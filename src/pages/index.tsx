@@ -1,11 +1,30 @@
 import type { NextPage } from "next";
 import Head from "next/head";
-// import { signIn, signOut, useSession } from "next-auth/react";
 import { trpc } from "../utils/trpc";
+// import { signIn, signOut, useSession } from "next-auth/react";
 import TopNav from "../components/TopNav";
 import Post from "../components/Post";
 
 const Home: NextPage = () => {
+  const feed = trpc.post.getPosts.useQuery();
+
+  const renderPosts = () => {
+    // loading state
+    if (!feed.data) return <div>loading...</div>;
+
+    //empty state
+    if (feed.data.length === 0) return <div>no posts</div>;
+
+    return (
+      <div className="mx-auto mt-8 w-1/3">
+        {/* posts container */}
+        {feed.data.map((post) => {
+          return <Post />;
+        })}
+      </div>
+    );
+  };
+
   return (
     <>
       <Head>
@@ -15,16 +34,7 @@ const Home: NextPage = () => {
       </Head>
       <div>
         <TopNav />
-        <div className="mx-auto mt-8 w-1/3">
-          {/* posts container */}
-          <Post />
-          <Post />
-          <Post />
-          <Post />
-          <Post />
-          <Post />
-          <Post />
-        </div>
+        {renderPosts()}
       </div>
     </>
   );
