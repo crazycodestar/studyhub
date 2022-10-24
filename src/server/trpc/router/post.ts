@@ -7,17 +7,20 @@ export const postRouter = router({
   }),
 
   getAccountPosts: publicProcedure
-    .input(z.object({ id: z.string().min(3) }))
+    .input(z.object({ id: z.string() }))
     .query(({ input, ctx }) => {
-      return ctx.prisma.post.findMany({
-        where: {
-          userId: input.id,
-        },
-      });
+      const getPosts = (id: string) =>
+        ctx.prisma.post.findMany({
+          where: {
+            userId: id,
+          },
+        });
+
+      return getPosts(input.id);
     }),
 
   getLibrary: publicProcedure
-    .input(z.object({ id: z.string().min(3) }))
+    .input(z.object({ id: z.string() }))
     .query(({ input, ctx }) => {
       return ctx.prisma.post.findMany({
         where: {
