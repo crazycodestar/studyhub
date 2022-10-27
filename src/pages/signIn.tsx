@@ -7,7 +7,7 @@ import signInValidation, {
 } from "../validation/signInValidation";
 
 const SignIn: NextPage = () => {
-  const [email, setEmail] = useState<null | string>(null);
+  // const [email, setEmail] = useState<null | string>(null);
 
   return (
     <div className="flex h-screen items-center justify-center">

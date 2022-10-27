@@ -23,7 +23,7 @@ const Account = () => {
       <div className="mx-auto mt-8 w-1/3">
         {/* posts container */}
         {posts.data.map((post) => {
-          return <Post isEditable />;
+          return <Post isEditable key={post.id} />;
         })}
       </div>
     );
