@@ -34,22 +34,20 @@ export const postRouter = router({
     }),
 
   createPost: protectedProcedure
-    .input(
-      z.object({ description: z.string().nullish(), attachment: z.string() })
-    )
-    .query(({ ctx, input }) => {
+    .input(z.object({ description: z.string() }))
+    .mutation(({ ctx, input }) => {
       return ctx.prisma.post.create({
         data: {
           userId: ctx.session.user.id,
           description: input.description,
-          attachment: input.attachment,
+          // attachment: input.attachment,
         },
       });
     }),
 
   deletePost: protectedProcedure
     .input(z.object({ postId: z.string() }))
-    .query(({ input, ctx }) => {
+    .mutation(({ input, ctx }) => {
       return ctx.prisma.post.delete({
         where: {
           id: input.postId,
@@ -59,7 +57,7 @@ export const postRouter = router({
 
   addToLib: protectedProcedure
     .input(z.object({ postId: z.string() }))
-    .query(({ ctx, input }) => {
+    .mutation(({ ctx, input }) => {
       return ctx.prisma.user.update({
         where: {
           id: ctx.session.user.id,
@@ -76,7 +74,7 @@ export const postRouter = router({
 
   removeFromLib: protectedProcedure
     .input(z.object({ postId: z.string() }))
-    .query(({ ctx, input }) => {
+    .mutation(({ ctx, input }) => {
       return ctx.prisma.user.update({
         where: {
           id: ctx.session.user.id,

@@ -1,17 +1,20 @@
 import { NextPage } from "next";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { useState } from "react";
 import { Formik, Form, Field } from "formik";
 import signInValidation, {
   signInValidationType,
 } from "../validation/signInValidation";
+import Link from "next/link";
 
 const SignIn: NextPage = () => {
   // const [email, setEmail] = useState<null | string>(null);
+  const { data: session } = useSession();
 
   return (
     <div className="flex h-screen items-center justify-center">
       <Formik
+        validationSchema={signInValidation}
         initialValues={{ email: "" }}
         onSubmit={(values: signInValidationType) => {
           signIn("email", { email: values.email });
@@ -57,6 +60,14 @@ const SignIn: NextPage = () => {
                 >
                   Sign In with discord
                 </button>
+                {session ? (
+                  <Link
+                    href={"/"}
+                    className="rounded-md bg-pink-700 p-2 text-white"
+                  >
+                    Sign In with discord
+                  </Link>
+                ) : null}
               </div>
             </Form>
           </div>

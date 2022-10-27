@@ -2,9 +2,10 @@ import { FC } from "react";
 
 interface IPostProps {
   isEditable?: boolean;
+  description: string;
 }
 
-const Post: FC<IPostProps> = ({ isEditable = false }) => {
+const Post: FC<IPostProps> = ({ isEditable = false, description }) => {
   return (
     <div className="w-full rounded-sm p-4 shadow-md">
       {/* account and time container */}
@@ -16,9 +17,7 @@ const Post: FC<IPostProps> = ({ isEditable = false }) => {
         <div>20 minutes ago</div>
       </div>
       <div className="ml-8">
-        <div>
-          more details over here<>( description)</>
-        </div>
+        <div>{description}</div>
         {/* potential links and files over here */}
         {/* options to store in library and share links over here */}
         <div className="mt-2 space-x-2">
