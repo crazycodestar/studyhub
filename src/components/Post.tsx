@@ -3,13 +3,17 @@ import { FC } from "react";
 interface IPostProps {
   isEditable?: boolean;
   description: string;
+  loggedIn?: boolean;
   onDelete?: () => void;
+  onAddToLib?: () => void;
 }
 
 const Post: FC<IPostProps> = ({
   isEditable = false,
   description,
+  loggedIn = false,
   onDelete,
+  onAddToLib,
 }) => {
   return (
     <div className="w-full rounded-sm p-4 shadow-md">
@@ -26,9 +30,14 @@ const Post: FC<IPostProps> = ({
         {/* potential links and files over here */}
         {/* options to store in library and share links over here */}
         <div className="mt-2 space-x-2">
-          <button className="rounded-md bg-pink-700 p-2 text-white">
-            add to library
-          </button>
+          {loggedIn ? (
+            <button
+              onClick={onAddToLib}
+              className="rounded-md bg-pink-700 p-2 text-white"
+            >
+              add to library
+            </button>
+          ) : null}
           <button className="rounded-md bg-pink-700 p-2 text-white">
             share
           </button>
