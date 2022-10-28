@@ -24,12 +24,26 @@ const Account = () => {
   const { id } = router.query as queryType;
   const posts = trpc.post.getAccountPosts.useQuery({ id });
 
-  const mutation = trpc.post.createPost.useMutation();
+  const utils = trpc.useContext();
+  const mutation = trpc.post.createPost.useMutation({
+    onSuccess: () => {
+      utils.post.getAccountPosts.invalidate();
+      router.push("/");
+    },
+  });
+  const deleteMutation = trpc.post.deletePost.useMutation({
+    onSuccess: () => {
+      utils.post.getAccountPosts.invalidate();
+    },
+  });
 
   const { register, handleSubmit } = useForm<Inputs>();
   const onSubmit: SubmitHandler<Inputs> = (data) => {
     mutation.mutate({ description: data.description });
-    router.push("/");
+  };
+
+  const handleDelete = (id: string) => {
+    deleteMutation.mutate({ postId: id });
   };
 
   const renderPosts = () => {
@@ -44,7 +58,12 @@ const Account = () => {
         {/* posts container */}
         {posts.data.map((post) => {
           return (
-            <Post description={post.description} isEditable key={post.id} />
+            <Post
+              description={post.description}
+              isEditable
+              key={post.id}
+              onDelete={() => handleDelete(post.id)}
+            />
           );
         })}
       </div>

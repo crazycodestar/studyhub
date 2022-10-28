@@ -3,9 +3,14 @@ import { FC } from "react";
 interface IPostProps {
   isEditable?: boolean;
   description: string;
+  onDelete?: () => void;
 }
 
-const Post: FC<IPostProps> = ({ isEditable = false, description }) => {
+const Post: FC<IPostProps> = ({
+  isEditable = false,
+  description,
+  onDelete,
+}) => {
   return (
     <div className="w-full rounded-sm p-4 shadow-md">
       {/* account and time container */}
@@ -28,7 +33,10 @@ const Post: FC<IPostProps> = ({ isEditable = false, description }) => {
             share
           </button>
           {isEditable ? (
-            <button className="rounded-md bg-pink-700 p-2 text-white">
+            <button
+              onClick={onDelete}
+              className="rounded-md bg-pink-700 p-2 text-white"
+            >
               delete
             </button>
           ) : null}
