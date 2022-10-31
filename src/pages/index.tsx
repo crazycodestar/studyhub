@@ -18,7 +18,6 @@ const Home: NextPage = () => {
   const { data: session } = useSession();
 
   const handleAddtoLib = (id: string) => {
-    console.log("handling");
     if (session?.user) {
       mutation.mutate({ postId: id });
     }
@@ -37,7 +36,7 @@ const Home: NextPage = () => {
         {feed.data.map((post) => {
           return (
             <Post
-              description={post.description}
+              post={post}
               key={post.id}
               onAddToLib={() => handleAddtoLib(post.id)}
               loggedIn={Boolean(session?.user)}

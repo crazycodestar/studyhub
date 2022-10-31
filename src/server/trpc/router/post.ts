@@ -3,7 +3,14 @@ import { z } from "zod";
 
 export const postRouter = router({
   getPosts: publicProcedure.query(({ ctx }) => {
-    return ctx.prisma.post.findMany();
+    return ctx.prisma.post.findMany({
+      select: {
+        createdAt: true,
+        description: true,
+        user: true,
+        id: true,
+      },
+    });
   }),
 
   getAccountPosts: publicProcedure
@@ -13,6 +20,12 @@ export const postRouter = router({
         ctx.prisma.post.findMany({
           where: {
             userId: id,
+          },
+          select: {
+            createdAt: true,
+            description: true,
+            user: true,
+            id: true,
           },
         });
 
@@ -29,6 +42,12 @@ export const postRouter = router({
               userId: input.id,
             },
           },
+        },
+        select: {
+          createdAt: true,
+          description: true,
+          user: true,
+          id: true,
         },
       });
     }),

@@ -4,6 +4,8 @@ import TopNav from "../../components/TopNav";
 import { trpc } from "../../utils/trpc";
 import { z } from "zod";
 import { useForm, SubmitHandler } from "react-hook-form";
+import { useSession } from "next-auth/react";
+import Button from "../../components/Button";
 
 type queryType = {
   id: string;
@@ -23,6 +25,8 @@ const Account = () => {
   const router = useRouter();
   const { id } = router.query as queryType;
   const posts = trpc.post.getAccountPosts.useQuery({ id });
+
+  const { data: session } = useSession();
 
   const utils = trpc.useContext();
   const mutation = trpc.post.createPost.useMutation({
@@ -54,36 +58,46 @@ const Account = () => {
     if (posts.data.length === 0) return <div>no posts</div>;
 
     return (
-      <div className="mx-auto mt-8 w-1/3">
+      <>
         {/* posts container */}
         {posts.data.map((post) => {
           return (
             <Post
-              description={post.description}
+              post={post}
               isEditable
               key={post.id}
               onDelete={() => handleDelete(post.id)}
             />
           );
         })}
-      </div>
+      </>
     );
   };
   return (
     <div>
       <TopNav />
-      <div className="rounded-md p-2">
-        <p>Write new post here</p>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <input {...register("description")} />
-          <button type="submit" className="rounded-md bg-pink-700 p-2">
-            Submit
-          </button>
-        </form>
-      </div>
-      <div className="mx-auto mt-8 w-1/3">
-        {/* posts container */}
-        {renderPosts()}
+      <div className="mx-auto mt-8">
+        <div className="mx-auto mt-8 w-1/3 rounded-md ">
+          <div className="mb-2 flex space-x-2">
+            <div className="h-6 w-6 rounded-full bg-slate-700" />
+            <p className="font-Montserrat text-lg font-semibold capitalize text-slate-500">
+              {session?.user?.name}
+            </p>
+          </div>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <textarea
+              rows={5}
+              placeholder="write new post here"
+              className="mb-2 w-full resize-none rounded-md bg-slate-300 px-4 py-2 "
+              {...register("description")}
+            />
+            <Button type="submit">Submit</Button>
+          </form>
+        </div>
+        <div className="mx-auto mt-8 w-1/3">
+          {/* posts container */}
+          {renderPosts()}
+        </div>
       </div>
     </div>
   );

@@ -1,19 +1,30 @@
+import { User } from "@prisma/client";
 import { FC } from "react";
+import Button from "../components/Button";
+
+type PostType = {
+  user: User;
+  id: string;
+  description: string;
+  createdAt: Date;
+};
 
 interface IPostProps {
+  post: PostType;
   isEditable?: boolean;
-  description: string;
   loggedIn?: boolean;
   onDelete?: () => void;
   onAddToLib?: () => void;
+  removeFromLib?: () => void;
 }
 
 const Post: FC<IPostProps> = ({
+  post,
   isEditable = false,
-  description,
   loggedIn = false,
   onDelete,
   onAddToLib,
+  removeFromLib,
 }) => {
   return (
     <div className="w-full rounded-sm p-4 shadow-md">
@@ -21,12 +32,12 @@ const Post: FC<IPostProps> = ({
       <div className="flex justify-between">
         <div className="flex">
           <div className="mr-2 h-6 w-6 rounded-full bg-slate-600" />
-          <p>Olalekan Adekanmbi</p>
+          <p>{post.user.name}</p>
         </div>
         <div>20 minutes ago</div>
       </div>
       <div className="ml-8">
-        <div>{description}</div>
+        <div>{post.description}</div>
         {/* potential links and files over here */}
         {/* options to store in library and share links over here */}
         <div className="mt-2 space-x-2">
@@ -48,6 +59,9 @@ const Post: FC<IPostProps> = ({
             >
               delete
             </button>
+          ) : null}
+          {removeFromLib ? (
+            <Button onClick={removeFromLib}>Remove</Button>
           ) : null}
         </div>
       </div>

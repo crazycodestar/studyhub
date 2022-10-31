@@ -1,5 +1,6 @@
 import NextAuth, { type NextAuthOptions } from "next-auth";
 import GitHubProvider from "next-auth/providers/github";
+import CredentialsProvider from "next-auth/providers/credentials";
 import DiscordProvider from "next-auth/providers/discord";
 // import EmailProvider from "next-auth/providers/email";
 
@@ -21,6 +22,33 @@ export const authOptions: NextAuthOptions = {
   // Configure one or more authentication providers
   adapter: PrismaAdapter(prisma),
   providers: [
+    CredentialsProvider({
+      id: "devAuth",
+      name: "Devhub provider",
+      authorize: async (credentials) => {
+        if (credentials) {
+          const user = {
+            id: credentials.username,
+            name: credentials.username,
+            email: credentials.email,
+          };
+          return user;
+        }
+        return null;
+      },
+      credentials: {
+        username: {
+          type: "text",
+          label: "username",
+          placeholder: "e.g olalekan adekanmbi",
+        },
+        email: {
+          type: "email",
+          label: "email Address",
+          placeholder: "e.g olamilekanadekanmbi@gmail.com",
+        },
+      },
+    }),
     // EmailProvider({
     //   server: process.env.EMAIL_SERVER,
     //   from: process.env.EMAIL_FROM,
