@@ -39,7 +39,7 @@ const Home: NextPage = () => {
               post={post}
               key={post.id}
               onAddToLib={() => handleAddtoLib(post.id)}
-              loggedIn={Boolean(session?.user)}
+              // loggedIn={Boolean(session?.user)}
             />
           );
         })}

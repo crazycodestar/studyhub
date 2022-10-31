@@ -1,8 +1,12 @@
 import { User } from "@prisma/client";
-import { FC } from "react";
+import { FC, useState } from "react";
 import Button from "../components/Button";
+import IconButton from "../components/IconButton";
+import { FaBookmark, FaRegBookmark, FaShareAlt } from "react-icons/fa";
+import { formatDistance } from "date-fns";
 
 type PostType = {
+  // isInLib: boolean;
   user: User;
   id: string;
   description: string;
@@ -12,7 +16,6 @@ type PostType = {
 interface IPostProps {
   post: PostType;
   isEditable?: boolean;
-  loggedIn?: boolean;
   onDelete?: () => void;
   onAddToLib?: () => void;
   removeFromLib?: () => void;
@@ -21,11 +24,18 @@ interface IPostProps {
 const Post: FC<IPostProps> = ({
   post,
   isEditable = false,
-  loggedIn = false,
   onDelete,
   onAddToLib,
   removeFromLib,
 }) => {
+  // const handleAddToLib = () => {
+  //   if (!post.isInLib && onAddToLib) onAddToLib();
+
+  //   if (post.isInLib && removeFromLib) removeFromLib();
+  // };
+  const getRelativeTime = (uploadAt: Date) => {
+    return formatDistance(uploadAt, new Date(), { addSuffix: true });
+  };
   return (
     <div className="w-full rounded-sm p-4 shadow-md">
       {/* account and time container */}
@@ -34,24 +44,27 @@ const Post: FC<IPostProps> = ({
           <div className="mr-2 h-6 w-6 rounded-full bg-slate-600" />
           <p>{post.user.name}</p>
         </div>
-        <div>20 minutes ago</div>
+        <div>{getRelativeTime(post.createdAt)}</div>
       </div>
       <div className="ml-8">
         <div>{post.description}</div>
         {/* potential links and files over here */}
         {/* options to store in library and share links over here */}
         <div className="mt-2 space-x-2">
-          {loggedIn ? (
-            <button
-              onClick={onAddToLib}
+          {/* {Boolean(onAddToLib || removeFromLib) ? (
+            <IconButton
+              onClick={handleAddToLib}
               className="rounded-md bg-pink-700 p-2 text-white"
             >
-              add to library
-            </button>
-          ) : null}
-          <button className="rounded-md bg-pink-700 p-2 text-white">
-            share
-          </button>
+              {!post.isInLib ? <FaRegBookmark /> : <FaBookmark />}
+            </IconButton>
+          ) : null} */}
+          <IconButton
+            variant="share"
+            className="rounded-md bg-pink-700 p-2 text-white"
+          >
+            <FaShareAlt />
+          </IconButton>
           {isEditable ? (
             <button
               onClick={onDelete}
@@ -60,9 +73,9 @@ const Post: FC<IPostProps> = ({
               delete
             </button>
           ) : null}
-          {removeFromLib ? (
+          {/* {removeFromLib ? (
             <Button onClick={removeFromLib}>Remove</Button>
-          ) : null}
+          ) : null} */}
         </div>
       </div>
     </div>
