@@ -11,7 +11,7 @@ const IconButton: FC<IIconButtonProps> = ({
   variant = "primary",
 }) => {
   const generateStyles = () => {
-    const base = "rounded-full p-2 text-slate-700";
+    const base = "rounded-full p-2 text-slate-700 transition-all ease-in-out";
     switch (variant) {
       case "primary":
         return base.concat(" ", "hover:text-slate-500 hover:bg-slate-200");

@@ -2,8 +2,14 @@ import { User } from "@prisma/client";
 import { FC, useState } from "react";
 import Button from "../components/Button";
 import IconButton from "../components/IconButton";
-import { FaBookmark, FaRegBookmark, FaShareAlt } from "react-icons/fa";
+import {
+  FaBookmark,
+  FaRegBookmark,
+  FaShareAlt,
+  FaUpload,
+} from "react-icons/fa";
 import { formatDistance } from "date-fns";
+import useClickAway from "../hooks/useClickAway";
 
 type PostType = {
   // isInLib: boolean;
@@ -28,6 +34,12 @@ const Post: FC<IPostProps> = ({
   onAddToLib,
   removeFromLib,
 }) => {
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  const handleShowDropdown = () => setShowDropdown((init) => !init);
+  const DropdownRef = useClickAway<HTMLDivElement>({
+    onClickAway: () => setShowDropdown(false),
+  });
   // const handleAddToLib = () => {
   //   if (!post.isInLib && onAddToLib) onAddToLib();
 
@@ -59,12 +71,27 @@ const Post: FC<IPostProps> = ({
               {!post.isInLib ? <FaRegBookmark /> : <FaBookmark />}
             </IconButton>
           ) : null} */}
-          <IconButton
-            variant="share"
-            className="rounded-md bg-pink-700 p-2 text-white"
-          >
-            <FaShareAlt />
-          </IconButton>
+          <div className="relative w-fit" ref={DropdownRef}>
+            <IconButton variant="share" onClick={handleShowDropdown}>
+              <FaUpload />
+            </IconButton>
+            {showDropdown ? (
+              <ul className="absolute top-10 right-0 z-50 min-w-[125px] space-y-1 whitespace-nowrap rounded-md bg-white p-2 shadow-md shadow-slate-300">
+                {onAddToLib || removeFromLib ? (
+                  <li>
+                    <button className="w-min-{200} w-full rounded-md p-2 text-start hover:bg-slate-300">
+                      Add to library
+                    </button>
+                  </li>
+                ) : null}
+                <li>
+                  <button className="w-full rounded-md p-2 text-start hover:bg-slate-300">
+                    Share
+                  </button>
+                </li>
+              </ul>
+            ) : null}
+          </div>
           {isEditable ? (
             <button
               onClick={onDelete}
