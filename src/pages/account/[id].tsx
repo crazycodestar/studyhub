@@ -35,6 +35,11 @@ const Account = () => {
       router.push("/");
     },
   });
+  const libMutation = trpc.post.addToLib.useMutation({
+    onSuccess: () => {
+      utils.post.getLibrary.invalidate();
+    },
+  });
   const deleteMutation = trpc.post.deletePost.useMutation({
     onSuccess: () => {
       utils.post.getAccountPosts.invalidate();
@@ -50,6 +55,12 @@ const Account = () => {
     deleteMutation.mutate({ postId: id });
   };
 
+  const handleAddtoLib = (id: string) => {
+    if (session?.user) {
+      libMutation.mutate({ postId: id });
+    }
+  };
+
   const renderPosts = () => {
     // loading state
     if (!posts.data) return <div>loading...</div>;
@@ -59,14 +70,13 @@ const Account = () => {
 
     return (
       <>
-        {/* posts container */}
         {posts.data.map((post) => {
           return (
             <Post
               post={post}
-              isEditable
               key={post.id}
               onDelete={() => handleDelete(post.id)}
+              onAddToLib={() => handleAddtoLib(post.id)}
             />
           );
         })}

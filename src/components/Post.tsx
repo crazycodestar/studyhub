@@ -1,13 +1,8 @@
 import { User } from "@prisma/client";
-import { FC, useState } from "react";
-import Button from "../components/Button";
+import { FC, useMemo, useState } from "react";
 import IconButton from "../components/IconButton";
-import {
-  FaBookmark,
-  FaRegBookmark,
-  FaShareAlt,
-  FaUpload,
-} from "react-icons/fa";
+import { MdBookmarkAdd, MdBookmarkRemove } from "react-icons/md";
+import { FaShare, FaUpload } from "react-icons/fa";
 import { formatDistance } from "date-fns";
 import useClickAway from "../hooks/useClickAway";
 
@@ -36,6 +31,40 @@ const Post: FC<IPostProps> = ({
 }) => {
   const [showDropdown, setShowDropdown] = useState(false);
 
+  const postFunctions = useMemo(() => {
+    // const functions = new Map<string, { func: () => void; icon?: any }>([
+    //   ["share", { func: () => alert("working on it") }],
+    // ]);
+
+    const functions: Array<{
+      name: string;
+      func: () => void;
+      icon?: JSX.Element;
+    }> = [
+      {
+        name: "share",
+        func: () => alert("working on it"),
+        icon: <FaShare fontSize={18} />,
+      },
+    ];
+
+    if (onAddToLib)
+      functions.push({
+        name: "add to library",
+        func: () => onAddToLib(),
+        icon: <MdBookmarkAdd fontSize={22} />,
+      });
+    if (removeFromLib)
+      functions.push({
+        name: "remove from library",
+        icon: <MdBookmarkRemove fontSize={22} />,
+        func: () => removeFromLib(),
+      });
+    // if (onDelete) functions.set("delete", { func: () => onDelete() });
+
+    return functions;
+  }, []);
+
   const handleShowDropdown = () => setShowDropdown((init) => !init);
   const DropdownRef = useClickAway<HTMLDivElement>({
     onClickAway: () => setShowDropdown(false),
@@ -45,6 +74,11 @@ const Post: FC<IPostProps> = ({
 
   //   if (post.isInLib && removeFromLib) removeFromLib();
   // };
+  const handleFunc = (func: () => void) => {
+    func();
+    return setShowDropdown(false);
+  };
+
   const getRelativeTime = (uploadAt: Date) => {
     return formatDistance(uploadAt, new Date(), { addSuffix: true });
   };
@@ -60,39 +94,30 @@ const Post: FC<IPostProps> = ({
       </div>
       <div className="ml-8">
         <div>{post.description}</div>
-        {/* potential links and files over here */}
-        {/* options to store in library and share links over here */}
         <div className="mt-2 space-x-2">
-          {/* {Boolean(onAddToLib || removeFromLib) ? (
-            <IconButton
-              onClick={handleAddToLib}
-              className="rounded-md bg-pink-700 p-2 text-white"
-            >
-              {!post.isInLib ? <FaRegBookmark /> : <FaBookmark />}
-            </IconButton>
-          ) : null} */}
           <div className="relative w-fit" ref={DropdownRef}>
             <IconButton variant="share" onClick={handleShowDropdown}>
               <FaUpload />
             </IconButton>
             {showDropdown ? (
               <ul className="absolute top-10 right-0 z-50 min-w-[125px] space-y-1 whitespace-nowrap rounded-md bg-white p-2 shadow-md shadow-slate-300">
-                {onAddToLib || removeFromLib ? (
-                  <li>
-                    <button className="w-min-{200} w-full rounded-md p-2 text-start hover:bg-slate-300">
-                      Add to library
-                    </button>
-                  </li>
-                ) : null}
-                <li>
-                  <button className="w-full rounded-md p-2 text-start hover:bg-slate-300">
-                    Share
-                  </button>
-                </li>
+                {postFunctions.map(({ func, name, icon }) => {
+                  return (
+                    <li>
+                      <button
+                        onClick={() => handleFunc(func)}
+                        className="w-min-{200} flex w-full items-center space-x-2 rounded-md p-2 text-start hover:bg-slate-300"
+                      >
+                        <span>{icon}</span>
+                        <p className="font-Raleway capitalize">{name}</p>
+                      </button>
+                    </li>
+                  );
+                })}
               </ul>
             ) : null}
           </div>
-          {isEditable ? (
+          {Boolean(onDelete) ? (
             <button
               onClick={onDelete}
               className="rounded-md bg-pink-700 p-2 text-white"
