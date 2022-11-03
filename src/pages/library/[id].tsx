@@ -1,6 +1,7 @@
 import { useRouter } from "next/router";
 import Post from "../../components/Post";
 import TopNav from "../../components/TopNav";
+import { usePopUp } from "../../layouts/Popup";
 import { trpc } from "../../utils/trpc";
 
 type queryType = {
@@ -11,11 +12,17 @@ const Account = () => {
   const router = useRouter();
   const { id } = router.query as queryType;
   const posts = trpc.post.getLibrary.useQuery({ id });
+  const { open, setValue } = usePopUp((state) => ({
+    open: state.open,
+    setValue: state.setValue,
+  }));
 
   const utils = trpc.useContext();
   const mutation = trpc.post.removeFromLib.useMutation({
     onSuccess: () => {
       utils.post.getLibrary.invalidate();
+      setValue("removed from library");
+      return open();
     },
   });
 

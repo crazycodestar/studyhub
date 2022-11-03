@@ -6,6 +6,7 @@ import { z } from "zod";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { useSession } from "next-auth/react";
 import Button from "../../components/Button";
+import { usePopUp } from "../../layouts/Popup";
 
 type queryType = {
   id: string;
@@ -25,6 +26,10 @@ const Account = () => {
   const router = useRouter();
   const { id } = router.query as queryType;
   const posts = trpc.post.getAccountPosts.useQuery({ id });
+  const { open, setValue } = usePopUp((state) => ({
+    open: state.open,
+    setValue: state.setValue,
+  }));
 
   const { data: session } = useSession();
 
@@ -33,16 +38,22 @@ const Account = () => {
     onSuccess: () => {
       utils.post.getAccountPosts.invalidate();
       router.push("/");
+      setValue("Posted");
+      return open();
     },
   });
   const libMutation = trpc.post.addToLib.useMutation({
     onSuccess: () => {
       utils.post.getLibrary.invalidate();
+      setValue("added to library");
+      return open();
     },
   });
   const deleteMutation = trpc.post.deletePost.useMutation({
     onSuccess: () => {
       utils.post.getAccountPosts.invalidate();
+      setValue("deleted");
+      return open();
     },
   });
 

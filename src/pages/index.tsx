@@ -5,13 +5,21 @@ import { trpc } from "../utils/trpc";
 import TopNav from "../components/TopNav";
 import Post from "../components/Post";
 import { useSession } from "next-auth/react";
+import { usePopUp } from "../layouts/Popup";
 
 const Home: NextPage = () => {
+  const { open, setValue } = usePopUp((state) => ({
+    open: state.open,
+    setValue: state.setValue,
+  }));
   const utils = trpc.useContext();
   const feed = trpc.post.getPosts.useQuery();
   const mutation = trpc.post.addToLib.useMutation({
     onSuccess: () => {
       utils.post.getLibrary.invalidate();
+      // add to library popup
+      setValue("added to library");
+      return open();
     },
   });
 
