@@ -48,6 +48,10 @@ const Account = () => {
       setValue("added to library");
       return open();
     },
+    onError: (error) => {
+      setValue(error.message, "error");
+      return open();
+    },
   });
   const deleteMutation = trpc.post.deletePost.useMutation({
     onSuccess: () => {

@@ -21,6 +21,10 @@ const Home: NextPage = () => {
       setValue("added to library");
       return open();
     },
+    onError: (error) => {
+      setValue(error.message, "error");
+      return open();
+    },
   });
 
   const { data: session } = useSession();

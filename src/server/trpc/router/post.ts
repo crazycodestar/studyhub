@@ -1,5 +1,7 @@
 import { router, publicProcedure, protectedProcedure } from "../trpc";
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
+import { TRPCError } from "@trpc/server";
 
 export const postRouter = router({
   getPosts: publicProcedure.query(({ ctx }) => {
@@ -76,19 +78,32 @@ export const postRouter = router({
 
   addToLib: protectedProcedure
     .input(z.object({ postId: z.string() }))
-    .mutation(({ ctx, input }) => {
-      return ctx.prisma.user.update({
-        where: {
-          id: ctx.session.user.id,
-        },
-        data: {
-          library: {
-            create: {
-              postId: input.postId,
+    .mutation(async ({ ctx, input }) => {
+      try {
+        const data = await ctx.prisma.user.update({
+          where: {
+            id: ctx.session.user.id,
+          },
+          data: {
+            library: {
+              create: {
+                postId: input.postId,
+              },
             },
           },
-        },
-      });
+        });
+        return data;
+      } catch (err) {
+        if (err instanceof Prisma.PrismaClientKnownRequestError) {
+          if (err.code === "P2002") {
+            throw new TRPCError({
+              code: "CONFLICT",
+              message: "Post alread in Library",
+              cause: err,
+            });
+          }
+        }
+      }
     }),
 
   removeFromLib: protectedProcedure
