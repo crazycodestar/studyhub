@@ -30,9 +30,10 @@ const Home: NextPage = () => {
   const { data: session } = useSession();
 
   const handleAddtoLib = (id: string) => {
-    if (session?.user) {
-      mutation.mutate({ postId: id });
-    }
+    // if (session?.user) {
+    mutation.mutate({ postId: id });
+    // }
+    // setValue("You are not signed in", "error");
   };
 
   const renderPosts = () => {

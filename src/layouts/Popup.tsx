@@ -1,4 +1,4 @@
-import { FC, ComponentProps, useEffect } from "react";
+import { FC, ComponentProps, useEffect, useMemo } from "react";
 import create from "zustand";
 import { MdClose } from "react-icons/md";
 import { AnimatePresence, motion } from "framer-motion";
@@ -21,7 +21,12 @@ export const usePopUp = create<PopUpState>()((set) => ({
   close: () => set((state) => ({ ...state, visible: false })),
   open: () => set((state) => ({ ...state, visible: true })),
   setValue: (value, status = "default") =>
-    set((state) => ({ ...state, value, status, visible: true })),
+    set((state) => ({
+      ...state,
+      value: Math.random().toString() + ":" + value,
+      status,
+      visible: true,
+    })),
 }));
 
 interface IPopupsProps extends ComponentProps<"div"> {}
@@ -39,13 +44,11 @@ const Popup: FC<IPopupsProps> = ({ children }) => {
     let timeout: NodeJS.Timeout | undefined = undefined;
 
     if (visible) {
+      console.log("readig timeout");
       timeout = setTimeout(() => close(), 5000);
     }
-    return () => {
-      clearTimeout(timeout);
-      // typeof timeout === NodeJS.Timeout ? clearTimeout(timeout) : null;
-    };
-  }, [value]);
+    return () => clearTimeout(timeout);
+  }, [value, visible]);
 
   const handleStatus = (status: StatusType) => {
     switch (status) {
@@ -55,6 +58,8 @@ const Popup: FC<IPopupsProps> = ({ children }) => {
         return "bg-slate-700 ";
     }
   };
+
+  const noHashValue = useMemo(() => value.split(":")[1], [value]);
 
   return (
     <div>
@@ -69,7 +74,7 @@ const Popup: FC<IPopupsProps> = ({ children }) => {
               status
             )}`}
           >
-            <p className=" font-Montserrat capitalize">{value}</p>
+            <p className=" font-Montserrat capitalize">{noHashValue}</p>
             <button
               onClick={close}
               className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-500 text-white "
