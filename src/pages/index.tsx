@@ -19,11 +19,11 @@ const Home: NextPage = () => {
       utils.post.getLibrary.invalidate();
       // add to library popup
       setValue("added to library");
-      return open();
+      // return open();
     },
     onError: (error) => {
       setValue(error.message, "error");
-      return open();
+      // return open();
     },
   });
 
