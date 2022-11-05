@@ -130,9 +130,7 @@ export const postRouter = router({
   createPresignedPost: protectedProcedure
     .input(
       z.object({
-        files: z.array(
-          z.object({ filename: z.string(), filetype: z.string() })
-        ),
+        file: z.object({ filename: z.string(), filetype: z.string() }),
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -155,10 +153,9 @@ export const postRouter = router({
           Expires: 300, // 5 minutes
         });
       };
-      return Promise.all(
-        input.files.map((file) =>
-          createS3PresignPostRequest(file.filename, file.filetype)
-        )
+      return createS3PresignPostRequest(
+        input.file.filename,
+        input.file.filetype
       );
     }),
 });
