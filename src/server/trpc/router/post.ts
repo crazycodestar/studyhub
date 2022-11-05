@@ -1,7 +1,9 @@
 import { router, publicProcedure, protectedProcedure } from "../trpc";
-import { z } from "zod";
+import { string, z } from "zod";
 import { Prisma } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
+import { env } from "../../../env/server.mjs";
+import crypto from "crypto";
 
 export const postRouter = router({
   getPosts: publicProcedure.query(({ ctx }) => {
@@ -80,7 +82,7 @@ export const postRouter = router({
     .input(z.object({ postId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       try {
-        const data = await ctx.prisma.user.update({
+        const result = await ctx.prisma.user.update({
           where: {
             id: ctx.session.user.id,
           },
@@ -92,7 +94,7 @@ export const postRouter = router({
             },
           },
         });
-        return data;
+        return result;
       } catch (err) {
         if (err instanceof Prisma.PrismaClientKnownRequestError) {
           if (err.code === "P2002") {
@@ -124,5 +126,39 @@ export const postRouter = router({
           },
         },
       });
+    }),
+  createPresignedPost: protectedProcedure
+    .input(
+      z.object({
+        files: z.array(
+          z.object({ filename: z.string(), filetype: z.string() })
+        ),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const createS3PresignPostRequest = async (
+        filename: string,
+        filetype: string
+      ) => {
+        const s3StorageLocation = "studyhub/";
+
+        const generateParsableRandomName = (name: string) => {
+          const randomString = crypto.randomBytes(6).toString("hex");
+          return randomString.concat("|", name);
+        };
+        return await ctx.s3.createPresignedPost({
+          Bucket: env.BUCKET_NAME,
+          Fields: {
+            key: s3StorageLocation.concat(generateParsableRandomName(filename)),
+            "Content-Type": filetype,
+          },
+          Expires: 300, // 5 minutes
+        });
+      };
+      return Promise.all(
+        input.files.map((file) =>
+          createS3PresignPostRequest(file.filename, file.filetype)
+        )
+      );
     }),
 });

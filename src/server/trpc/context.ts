@@ -5,11 +5,12 @@ import type { Session } from "next-auth";
 import { getServerAuthSession } from "../common/get-server-auth-session";
 import { prisma } from "../db/client";
 import S3 from "aws-sdk/clients/s3";
+import { env } from "../../env/server.mjs";
 
 const s3 = new S3({
   apiVersion: "2006-03-01",
-  accessKeyId: process.env.ACCESS_KEY,
-  secretAccessKey: process.env.SECRET_KEY,
+  accessKeyId: env.ACCESS_KEY,
+  secretAccessKey: env.SECRET_KEY,
 });
 
 type CreateContextOptions = {
