@@ -57,15 +57,25 @@ export const postRouter = router({
     }),
 
   createPost: protectedProcedure
-    .input(z.object({ description: z.string() }))
+    .input(z.object({ description: z.string().min(1) }))
     .mutation(({ ctx, input }) => {
-      return ctx.prisma.post.create({
-        data: {
-          userId: ctx.session.user.id,
-          description: input.description,
-          // attachment: input.attachment,
-        },
-      });
+      console.log("these are the inputs", input);
+      try {
+        const result = ctx.prisma.post.create({
+          data: {
+            userId: ctx.session.user.id,
+            description: input.description,
+            // attachment: input.attachment,
+          },
+        });
+        return result;
+      } catch (err) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "post not created",
+          cause: err,
+        });
+      }
     }),
 
   deletePost: protectedProcedure
@@ -128,27 +138,39 @@ export const postRouter = router({
       });
     }),
   createPresignedPost: protectedProcedure
-    .input(z.object({ filename: z.string(), filetype: z.string() }))
-    .mutation(async ({ ctx, input }) => {
+    .input(
+      z.object({
+        filename: z.string(),
+        // filetype: z.string()
+      })
+    )
+    .query(async ({ ctx, input }) => {
       const createS3PresignPostRequest = async (
-        filename: string,
-        filetype: string
-      ) => {
+        filename: string
+        // filetype: string
+      ): Promise<string> => {
         const s3StorageLocation = "studyhub/";
 
         const generateParsableRandomName = (name: string) => {
           const randomString = crypto.randomBytes(6).toString("hex");
           return randomString.concat("|", name);
         };
-        return await ctx.s3.createPresignedPost({
-          Bucket: env.BUCKET_NAME,
-          Fields: {
-            key: s3StorageLocation.concat(generateParsableRandomName(filename)),
-            "Content-Type": filetype,
-          },
-          Expires: 300, // 5 minutes
-        });
+        try {
+          const result = await ctx.s3.getSignedUrlPromise("putObject", {
+            Bucket: env.BUCKET_NAME,
+            Key: s3StorageLocation.concat(generateParsableRandomName(filename)),
+            Expires: 300, // 5 minutes
+          });
+          return result;
+        } catch (err) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to generate upload url",
+            cause: err,
+          });
+        }
       };
-      return createS3PresignPostRequest(input.filename, input.filetype);
+      return createS3PresignPostRequest(input.filename);
+      // input.filetype;
     }),
 });

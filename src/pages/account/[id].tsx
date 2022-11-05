@@ -3,10 +3,13 @@ import Post from "../../components/Post";
 import TopNav from "../../components/TopNav";
 import { trpc } from "../../utils/trpc";
 import { z } from "zod";
-import { useForm, SubmitHandler } from "react-hook-form";
+import { useForm, SubmitHandler, useFieldArray } from "react-hook-form";
 import { useSession } from "next-auth/react";
 import Button from "../../components/Button";
 import { usePopUp } from "../../layouts/Popup";
+import { ChangeEvent, useRef, useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import axios from "axios";
 
 type queryType = {
   id: string;
@@ -20,16 +23,22 @@ type postValidationType = z.infer<typeof postValidation>;
 
 type Inputs = {
   description: string;
+  files: { filename: string; storageLink: string }[];
 };
 
 const Account = () => {
   const router = useRouter();
   const { id } = router.query as queryType;
   const posts = trpc.post.getAccountPosts.useQuery({ id });
-  const { open, setValue } = usePopUp((state) => ({
+  const { setValue } = usePopUp((state) => ({
     open: state.open,
     setValue: state.setValue,
   }));
+
+  const onSubmit: SubmitHandler<Inputs> = (data) => {
+    mutation.mutate({ description: data.description });
+  };
+  const { register, handleSubmit } = useForm<Inputs>();
 
   const { data: session } = useSession();
 
@@ -39,32 +48,26 @@ const Account = () => {
       utils.post.getAccountPosts.invalidate();
       router.push("/");
       setValue("Posted");
-      return open();
+    },
+    onError: (error) => {
+      setValue(error.message, "error");
     },
   });
   const libMutation = trpc.post.addToLib.useMutation({
     onSuccess: () => {
       utils.post.getLibrary.invalidate();
       setValue("added to library");
-      return open();
     },
     onError: (error) => {
       setValue(error.message, "error");
-      return open();
     },
   });
   const deleteMutation = trpc.post.deletePost.useMutation({
     onSuccess: () => {
       utils.post.getAccountPosts.invalidate();
       setValue("deleted");
-      return open();
     },
   });
-
-  const { register, handleSubmit } = useForm<Inputs>();
-  const onSubmit: SubmitHandler<Inputs> = (data) => {
-    mutation.mutate({ description: data.description });
-  };
 
   const handleDelete = (id: string) => {
     deleteMutation.mutate({ postId: id });
@@ -98,6 +101,7 @@ const Account = () => {
       </>
     );
   };
+
   return (
     <div>
       <TopNav />
@@ -116,6 +120,7 @@ const Account = () => {
               className="mb-2 w-full resize-none rounded-md bg-slate-300 px-4 py-2 "
               {...register("description")}
             />
+            <FileUploadArray />
             <Button type="submit">Submit</Button>
           </form>
         </div>
@@ -126,6 +131,85 @@ const Account = () => {
       </div>
     </div>
   );
+};
+
+const FileUploadArray = () => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [value, setValue] = useState<{ file: File }[]>([]);
+
+  const handleFileUpload = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.length) {
+      const file = e.target.files[0] as File;
+      setValue((init) => [{ file, url: "strings" }, ...init]);
+    }
+  };
+
+  return (
+    <div className="mb-2 w-full rounded-md bg-slate-300 px-4 py-2 ">
+      <Button
+        type="button"
+        onClick={() =>
+          fileInputRef.current ? fileInputRef.current.click() : null
+        }
+      >
+        Upload File
+      </Button>
+      <input
+        className="hidden"
+        ref={fileInputRef}
+        type={"file"}
+        onChange={(e) => handleFileUpload(e)}
+      />
+      {value.map((file) => {
+        return <FileUpload file={file.file} />;
+      })}
+    </div>
+  );
+};
+
+const FileUpload = ({ file }: { file: File }) => {
+  const fileUploadMutation = useMutation({
+    mutationFn: ({ file, url }: { file: File; url: string }) => {
+      const form = new FormData();
+      form.append("file", file);
+      const config = {
+        headers: {
+          "Content-type": "multipart/form-data",
+        },
+      };
+      return axios.post(url, form, config);
+    },
+  });
+
+  const { data, isLoading } = trpc.post.createPresignedPost.useQuery(
+    {
+      filename: file.name,
+    },
+    {
+      onSuccess: (data) => {
+        fileUploadMutation.mutate({
+          url: data,
+          file,
+        });
+      },
+    }
+  );
+  if (isLoading) return <p>loading here...</p>;
+
+  // return <p>hey...{JSON.stringify(data, null, 2)}</p>;
+
+  if (data) {
+    console.log("calling mutation");
+
+    return (
+      <div>
+        {file.name}
+        {data}
+      </div>
+    );
+  }
+
+  return <p>loading-final_return...</p>;
 };
 
 export default Account;

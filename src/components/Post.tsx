@@ -16,7 +16,6 @@ type PostType = {
 
 interface IPostProps {
   post: PostType;
-  isEditable?: boolean;
   onDelete?: () => void;
   onAddToLib?: () => void;
   removeFromLib?: () => void;
@@ -24,7 +23,6 @@ interface IPostProps {
 
 const Post: FC<IPostProps> = ({
   post,
-  isEditable = false,
   onDelete,
   onAddToLib,
   removeFromLib,

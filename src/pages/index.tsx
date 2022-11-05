@@ -36,6 +36,8 @@ const Home: NextPage = () => {
     // setValue("You are not signed in", "error");
   };
 
+  console.log("resetting");
+
   const renderPosts = () => {
     // loading state
     if (!feed.data) return <div>loading...</div>;
