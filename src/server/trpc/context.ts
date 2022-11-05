@@ -8,9 +8,10 @@ import S3 from "aws-sdk/clients/s3";
 import { env } from "../../env/server.mjs";
 
 const s3 = new S3({
-  apiVersion: "2006-03-01",
+  region: "us-west-2",
   accessKeyId: env.ACCESS_KEY,
   secretAccessKey: env.SECRET_KEY,
+  signatureVersion: "v4",
 });
 
 type CreateContextOptions = {
