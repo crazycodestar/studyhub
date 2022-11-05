@@ -18,6 +18,8 @@
     "@trpc/next": "10.0.0-proxy-beta.17",
     "@trpc/react": "10.0.0-proxy-beta.17",
     "@trpc/server": "10.0.0-proxy-beta.17",
+    "aws-sdk": "^2.1248.0",
+    "cloudinary": "^1.32.0",
     "date-fns": "^2.29.3",
     "formik": "^2.2.9",
     "framer-motion": "^7.6.4",

@@ -4,9 +4,17 @@ import type { CreateNextContextOptions } from "@trpc/server/adapters/next";
 import type { Session } from "next-auth";
 import { getServerAuthSession } from "../common/get-server-auth-session";
 import { prisma } from "../db/client";
+import S3 from "aws-sdk/clients/s3";
+
+const s3 = new S3({
+  apiVersion: "2006-03-01",
+  accessKeyId: process.env.ACCESS_KEY,
+  secretAccessKey: process.env.SECRET_KEY,
+});
 
 type CreateContextOptions = {
   session: Session | null;
+  s3: S3;
 };
 
 /** Use this helper for:
@@ -16,6 +24,7 @@ type CreateContextOptions = {
 export const createContextInner = async (opts: CreateContextOptions) => {
   return {
     session: opts.session,
+    s3: opts.s3,
     prisma,
   };
 };
@@ -32,6 +41,7 @@ export const createContext = async (opts: CreateNextContextOptions) => {
 
   return await createContextInner({
     session,
+    s3: s3,
   });
 };
 
