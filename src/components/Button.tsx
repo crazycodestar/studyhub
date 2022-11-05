@@ -10,6 +10,7 @@ const Button: FC<IButtonProps> = ({
   onClick,
   children,
   variant = "primary",
+  ...others
 }) => {
   const generateStyling = () => {
     const base = "capitalize cursor-pointer rounded-md px-4 py-2";
@@ -23,7 +24,7 @@ const Button: FC<IButtonProps> = ({
     }
   };
   return (
-    <button className={generateStyling()} onClick={onClick}>
+    <button className={generateStyling()} onClick={onClick} {...others}>
       {children}
     </button>
   );
