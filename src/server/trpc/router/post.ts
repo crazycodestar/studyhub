@@ -144,7 +144,7 @@ export const postRouter = router({
         // filetype: z.string()
       })
     )
-    .query(async ({ ctx, input }) => {
+    .mutation(async ({ ctx, input }) => {
       const createS3PresignPostRequest = async (
         filename: string
         // filetype: string

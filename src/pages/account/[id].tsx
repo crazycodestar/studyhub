@@ -7,9 +7,10 @@ import { useForm, SubmitHandler, useFieldArray } from "react-hook-form";
 import { useSession } from "next-auth/react";
 import Button from "../../components/Button";
 import { usePopUp } from "../../layouts/Popup";
-import { ChangeEvent, useRef, useState } from "react";
+import { ChangeEvent, useRef, useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
+import shallow from "zustand/shallow";
 
 type queryType = {
   id: string;
@@ -30,10 +31,13 @@ const Account = () => {
   const router = useRouter();
   const { id } = router.query as queryType;
   const posts = trpc.post.getAccountPosts.useQuery({ id });
-  const { setValue } = usePopUp((state) => ({
-    open: state.open,
-    setValue: state.setValue,
-  }));
+  const { setValue } = usePopUp(
+    (state) => ({
+      open: state.open,
+      setValue: state.setValue,
+    }),
+    shallow
+  );
 
   const onSubmit: SubmitHandler<Inputs> = (data) => {
     mutation.mutate({ description: data.description });
@@ -138,10 +142,14 @@ const FileUploadArray = () => {
   const [value, setValue] = useState<{ file: File }[]>([]);
 
   const handleFileUpload = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.length) {
-      const file = e.target.files[0] as File;
-      setValue((init) => [{ file, url: "strings" }, ...init]);
-    }
+    console.log("rerunning onchange function");
+    if (!e.target.files?.length) return;
+    // continue here
+    const file = e.target.files[0] as File;
+    setValue((init) => [
+      { file, state: "loading", name: Math.random().toString() },
+      ...init,
+    ]);
   };
 
   return (
@@ -168,43 +176,42 @@ const FileUploadArray = () => {
 };
 
 const FileUpload = ({ file }: { file: File }) => {
+  const [fileData, setFileData] = useState<{
+    filename: string;
+    storageLink: string;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!fileData) {
+      console.log("re_running");
+      return generatePresignPostMutation.mutate({ filename: file.name });
+    }
+  }, [fileData]);
+
   const fileUploadMutation = useMutation({
     mutationFn: ({ file, url }: { file: File; url: string }) => {
-      const form = new FormData();
-      form.append("file", file);
-      const config = {
+      return fetch(url, {
+        method: "PUT",
         headers: {
-          "Content-type": "multipart/form-data",
+          "Content-Type": "multipart/form=data",
         },
-      };
-      return axios.post(url, form, config);
+        body: file,
+      });
     },
+    onSuccess: (data) => console.log(data),
+    onError: (error) => console.error("error_here", error),
   });
 
-  const { data, isLoading } = trpc.post.createPresignedPost.useQuery(
-    {
-      filename: file.name,
-    },
-    {
-      onSuccess: (data) => {
-        fileUploadMutation.mutate({
-          url: data,
-          file,
-        });
-      },
-    }
-  );
-  if (isLoading) return <p>loading here...</p>;
+  const generatePresignPostMutation =
+    trpc.post.createPresignedPost.useMutation();
 
-  // return <p>hey...{JSON.stringify(data, null, 2)}</p>;
+  if (fileUploadMutation.isLoading) return <p>loading here...</p>;
 
-  if (data) {
-    console.log("calling mutation");
-
+  if (fileUploadMutation.data) {
     return (
       <div>
         {file.name}
-        {data}
+        {JSON.stringify(fileUploadMutation.data, null, 2)}
       </div>
     );
   }

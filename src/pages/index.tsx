@@ -1,7 +1,6 @@
 import type { NextPage } from "next";
 import Head from "next/head";
 import { trpc } from "../utils/trpc";
-// import { signIn, signOut, useSession } from "next-auth/react";
 import TopNav from "../components/TopNav";
 import Post from "../components/Post";
 import { useSession } from "next-auth/react";

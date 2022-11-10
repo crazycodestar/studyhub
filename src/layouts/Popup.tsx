@@ -2,6 +2,7 @@ import { FC, ComponentProps, useEffect, useMemo } from "react";
 import create from "zustand";
 import { MdClose } from "react-icons/md";
 import { AnimatePresence, motion } from "framer-motion";
+import shallow from "zustand/shallow";
 
 type StatusType = "default" | "error";
 
@@ -33,12 +34,15 @@ interface IPopupsProps extends ComponentProps<"div"> {}
 
 const Popup: FC<IPopupsProps> = ({ children }) => {
   // const value = usePopUp((state) => state.value);
-  const { value, visible, close, status } = usePopUp((state) => ({
-    value: state.value,
-    status: state.status,
-    visible: state.visible,
-    close: state.close,
-  }));
+  const { value, visible, close, status } = usePopUp(
+    (state) => ({
+      value: state.value,
+      status: state.status,
+      visible: state.visible,
+      close: state.close,
+    }),
+    shallow
+  );
 
   useEffect(() => {
     let timeout: NodeJS.Timeout | undefined = undefined;
